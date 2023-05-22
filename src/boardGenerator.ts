@@ -10,6 +10,10 @@ function generateSolutions(boardSize: number, ships: ship[]) {
     // 3. different cases of available information (hits and misses)
 }
 
+// information cases
+// varying levels of misses
+// varying levels of hits
+// combination of hits and misses
 
 function generateShipConfiguration(boardSize: number, ships: ship[]) {
     let shipConfig: board;
