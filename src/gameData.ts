@@ -8,11 +8,22 @@ interface board {
     matrix: number[][];
 }
 
-type ship = number;
+interface ship {
+    length: number;
+    placed: boolean;
+}
+
+interface test {
+    inputBoard: number[][];
+    input: number[];
+    output: number[];
+    outputBoard: number[][];
+}
 
 export {
     hit,
     miss,
     board,
-    ship
+    ship,
+    test
 }
