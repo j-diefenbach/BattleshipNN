@@ -4,3 +4,4 @@
 // 3. train NN model
 // 4. test NN model and output
 
+console.log('hello');
