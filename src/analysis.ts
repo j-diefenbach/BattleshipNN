@@ -5,6 +5,7 @@
 // 4. test NN model and output
 import { generateMatrix, generateTests, generateStrictTests, coord } from "./boardGenerator";
 import { battleshipCost, battleshipStrictCost, initialiseNetwork } from "./network";
+import { generateShipConfiguration } from "./boardGenerator";
 import { test, board } from "./GameData";
 import { randomInt } from "crypto";
 import { printMatrix } from "./formatter";
@@ -15,6 +16,7 @@ var synaptic = require('synaptic');
 var Trainer = synaptic.Trainer;
 var Network = synaptic.Network;
 
+const NUM_SIMULATIONS = 100;
 
 let tests = JSON.parse(fs.readFileSync('./src/tests.json', { encoding: 'utf8', flag: 'r' }, (err) => {
     if (err)
@@ -23,7 +25,7 @@ let tests = JSON.parse(fs.readFileSync('./src/tests.json', { encoding: 'utf8', f
       console.log("Tests file read successfully");
     }
 }));
-let testPairs = tests.testingPairs;
+console.log(tests);
 let network = Network.fromJSON(
     JSON.parse(fs.readFileSync('./NN.json', { encoding: 'utf8', flag: 'r' }, (err) => {
         if (err)
@@ -36,22 +38,27 @@ let network = Network.fromJSON(
 console.log(network);
 let trainer = new Trainer(network);
 
-console.log(trainer.test(testPairs, 
-    {
-        iterations: 2000,
-        error: 0.01,
-        // cost: battleshipCost,
-        shuffle: true,
-    })
-);
-testDiagnostics(testPairs[0]);
-
-let simulationShipState = {
-    size: testPairs[1].size,
-    matrix: testPairs[1].shipState
+console.log('simulating games');
+let results: number[] = [];
+let resultString = '';
+for (let i = 0; i < NUM_SIMULATIONS; i++) {
+    // generate new ship state, copying the last set of tests
+    let shipConfig = generateShipConfiguration(tests.size, tests.ships);
+    let numTurnsToWin = playBattleship(shipConfig, NNApproach)
+    results.push(numTurnsToWin);
+    resultString += `${numTurnsToWin}\n`
 }
-console.log('simulating game');
-console.log(playBattleship(simulationShipState, NNApproach));
+
+fs.writeFile('./data/simulations.txt', resultString, (err) => {
+    if (err)
+      console.log(err);
+    else {
+      console.log("Tests file written successfully");
+    }
+});
+
+// convert to string and write to data
+
 
 // console.log(network.trainer.train(strictTests, 
 //     {

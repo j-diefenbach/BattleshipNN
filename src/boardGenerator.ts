@@ -1,31 +1,73 @@
 // generates various board states for testing
 // need to be able to vary parameters and create multiple variations of the same underlying board state
 
-import { check } from "yargs";
 import { board, ship, test } from "./GameData";
+import { getInfoGainBoard, getProbability } from "./probability";
 
 function generateTests(boardSize: number, ships: ship[], numSolutions: number) {
     let tests: test[] = [];
+    let numTrainingPairs = 0;
     for (let i = 0; i < numSolutions; i++) {
         let shipConfig = generateShipConfiguration(boardSize, ships);
         let hitConfigs = generateHitConfigurations(shipConfig);
         for (const hitConfig of hitConfigs) {
             // generate input-solution pair
+            let probState = getProbability(hitConfig, ships);
+            let infoGainState = getInfoGainBoard(hitConfig, probState, ships);
             let newTest: test = {
                 input: [],
                 output: [],
-                inputBoard: hitConfig.matrix,
-                outputBoard: shipConfig.matrix,
+                hitState: hitConfig.matrix,
+                shipState: shipConfig.matrix,
+                probState: probState,
+                infoGainState: infoGainState,
+                size: boardSize,
             }
             for (let row = 0; row < boardSize; row++) {
                 for (let col = 0; col < boardSize; col++) {
                     newTest.input.push(hitConfig.matrix[row][col]);
-                    newTest.output.push(shipConfig.matrix[row][col]);
+                    newTest.output.push(infoGainState[row][col]);
                 }
             }
             tests.push(newTest)
+            numTrainingPairs++;
         }
     }
+    console.log(`${numSolutions} ship states generated, ${numTrainingPairs} input/output pairs generated`);
+    return tests;
+}
+
+function generateStrictTests(boardSize: number, ships: ship[], numSolutions: number) {
+    let tests: test[] = [];
+    let numTrainingPairs = 0;
+    for (let i = 0; i < numSolutions; i++) {
+        let shipConfig = generateShipConfiguration(boardSize, ships);
+        let hitConfigs = generateHitConfigurations(shipConfig);
+        for (const hitConfig of hitConfigs) {
+            // generate input-solution pair
+            let probState = getProbability(hitConfig, ships);
+            let solution = shipConfig.matrix;
+            let infoGainState = getInfoGainBoard(hitConfig, probState, ships);
+            let newTest: test = {
+                input: [],
+                output: [],
+                hitState: hitConfig.matrix,
+                shipState: shipConfig.matrix,
+                probState: probState,
+                infoGainState: infoGainState,
+                size: boardSize,
+            }
+            for (let row = 0; row < boardSize; row++) {
+                for (let col = 0; col < boardSize; col++) {
+                    newTest.input.push(hitConfig.matrix[row][col]);
+                    newTest.output.push(solution[row][col]);
+                }
+            }
+            tests.push(newTest)
+            numTrainingPairs++;
+        }
+    }
+    console.log(`${numSolutions} ship states generated, ${numTrainingPairs} input/output pairs generated`);
     return tests;
 }
 
@@ -53,11 +95,13 @@ const MAXTRIES = 100;
 // SHIP HELPERS
 
 function generateShipConfiguration(boardSize: number, ships: ship[]) {
+    for (let ship of ships) {
+        ship.placed = false;
+    }
     let shipConfig: board = {
         size: boardSize,
         matrix: generateMatrix(boardSize),
     };
-    
     
     let allShipsPlaced = false;
     while (ships.find(x => !x.placed) !== undefined) {
@@ -126,9 +170,15 @@ function place(board: board, ship: ship, direction: coord, coord: coord) {
 function generateHitConfigurations(board: board): board[] {
     let configurations: board[] = [];
     for (let i = 0; i < 5; i++) {
-        let hitConfig = generateRandom(board, getRandomInt(board.size * board.size));
-        configurations.push(hitConfig);
+        configurations.push(
+            generateRandom(board, getRandomInt(board.size * board.size)));
+        configurations.push(
+            generateHitsOnly(board, getRandomInt(board.size * board.size)));
+        configurations.push(
+            generateMissesOnly(board, getRandomInt(board.size * board.size)));
     }
+    configurations.push(generateDetermined(board));
+    configurations.push(generateDetermined(board));
     return configurations;
 }
 
@@ -145,7 +195,7 @@ function generateRandom(board: board, numHits: number) {
     for (let i = 0; i < numHits; i++) {
         while (1) {
             let coord = getRandomCoord(board.size);
-            let square = board.matrix[coord.row][coord.col]
+            let square = board.matrix[coord.row][coord.col];
             if (hitBoard.matrix[coord.row][coord.col] == 0.5) {
                 if (square == 1) {
                     hitBoard.matrix[coord.row][coord.col] = 1;
@@ -159,12 +209,100 @@ function generateRandom(board: board, numHits: number) {
     return hitBoard;
 }
 
+// generates a board that is fully determined (completely full)
+function generateDetermined(board: board) {
+    let hitBoard = {
+        size: board.size,
+        matrix: generateMidMatrix(board.size),
+    }
+    for (let row = 0; row < board.size; row++) {
+        for (let col = 0; col < board.size; col++) {
+            let square = board.matrix[row][col];
+            if (hitBoard.matrix[row][col] == 0.5) {
+                if (square == 1) {
+                    hitBoard.matrix[row][col] = 1;
+                } else {
+                    hitBoard.matrix[row][col] = 0;
+                }
+                break;
+            }
+        }
+    }
+    return hitBoard;
+}
+
+function generateMissesOnly(board: board, numHits: number) {
+    let hitBoard = {
+        size: board.size,
+        matrix: generateMidMatrix(board.size),
+    }
+    if (numHits > board.size * board.size) {
+        numHits = board.size * board.size;
+    } else if (numHits < 0) {
+        numHits = 0;
+    }
+    for (let i = 0; i < numHits; i++) {
+        while (1) {
+            let coord = getRandomCoord(board.size);
+            let square = board.matrix[coord.row][coord.col];
+            if (hitBoard.matrix[coord.row][coord.col] == 0.5) {
+                if (square == 1) {
+                    break;
+                } else {
+                    hitBoard.matrix[coord.row][coord.col] = 0;
+                }
+                break;
+            }
+        }
+    }
+    return hitBoard;
+}
+
+function generateHitsOnly(board: board, numHits: number) {
+    let hitBoard = {
+        size: board.size,
+        matrix: generateMidMatrix(board.size),
+    }
+    if (numHits > board.size * board.size) {
+        numHits = board.size * board.size;
+    } else if (numHits < 0) {
+        numHits = 0;
+    }
+    for (let i = 0; i < numHits; i++) {
+        while (1) {
+            let coord = getRandomCoord(board.size);
+            let square = board.matrix[coord.row][coord.col];
+            if (hitBoard.matrix[coord.row][coord.col] == 0.5) {
+                if (square == 1) {
+                    hitBoard.matrix[coord.row][coord.col] = 1;
+                } else {
+                    break;
+                }
+                break;
+            }
+        }
+    }
+    return hitBoard;
+}
+
 // SOLTUION HELPERS
 
-function generateSolution(shipConfig: board, hitConfig: board) {
+function generateSolution(shipConfig: number[][], hitConfig: number[][], probState: number[][], size: number) {
     // generates the desired solution from the NN, helps guide development based on strictness or expectations
 
+    let solution = generateMatrix(size);
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+            if (hitConfig[row][col] == 1 || shipConfig[row][col] == 1) {
+                solution[row][col] = 1;
+            } else {
+                // probability for guided learning
+                solution[row][col] = probState[row][col];
+            }
+        }
 
+    }
+    return solution;
 }
 
 // SIMPLE HELPERS
@@ -213,5 +351,13 @@ function getRandomInt(max: number) {
 }
 
 export {
-    generateTests
+    generateTests,
+    generateStrictTests,
+    generateShipConfiguration,
+    inBounds,
+    coord,
+    directions,
+    EMPTY,
+    generateMatrix,
+    generateMidMatrix
 }

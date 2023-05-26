@@ -8,7 +8,7 @@ Architect = synaptic.Architect;
 function initialiseNetwork(boardSize: number) {
     let layerSize = boardSize ** 2;
     var inputLayer = new Layer(layerSize);
-    var hiddenLayer1 = new Layer(2 * layerSize);
+    var hiddenLayer1 = new Layer(layerSize * 2);
     var outputLayer = new Layer(layerSize);
 
     inputLayer.project(hiddenLayer1);
@@ -21,7 +21,7 @@ function initialiseNetwork(boardSize: number) {
     });
     var trainer = new Trainer(myNetwork);
 
-    console.log('network initialised');
+    console.log('network initialised with input/output size ', layerSize);
     return {
         network: myNetwork,
         trainer: trainer,
@@ -30,17 +30,30 @@ function initialiseNetwork(boardSize: number) {
 }
 
 function battleshipCost(target: number[], output: number[]) {
-    let squaredError = 0;
+    let error = 0;
     for (let i in target) {
         if (target[i] == 1) {
-            // should be a hit
-            squaredError += (1 - output[i]) ** 2;
+            // should be a hit so dont square error
+            error += (1 - output[i]) ** 2;
         } else {
-            // ignore for now
+            error += (target[i] - output[i]) ** 2;
         }
     }
-    return squaredError;
+    return error;
     
 }
 
-export { initialiseNetwork, battleshipCost };
+function battleshipStrictCost(target: number[], output: number[]) {
+    let error = 0;
+    for (let i in target) {
+        if (target[i] == 1) {
+            // should be a hit so dont square error
+            error += (1 - output[i]);
+        } else {
+            error += (target[i]) ** 2;
+        }
+    }
+    return error;
+}
+
+export { initialiseNetwork, battleshipCost, battleshipStrictCost };

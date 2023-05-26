@@ -1,13 +1,10 @@
 {
     "scripts": {
-        "test": "jest --testMatch '**/?(*.)+(test).ts'",
-        "jest": "jest",
-        "tsc": "tsc --project tsconfig.json",
+        "train": "ts-node -T src/trainNN.ts",
+        "main": "ts-node -T src/battleship.ts",
+        "analyse": "ts-node -T src/analysis.ts",
         "lint": "eslint 'src/**/*.{ts,js}'",
-        "lint-fix": "eslint --fix 'src/**/*.{ts,js}'",
-        "start": "ts-node -T src/battleship.ts",
-        "ts-node-coverage": "nyc --reporter=text --reporter=lcov ts-node -T src/server.ts",
-        "posttest": "pkill -f 'node_modules/sync-rpc/lib/worker.js' > /dev/null 2>&1"
+        "lint-fix": "eslint --fix 'src/**/*.{ts,js}'"
     },
     "dependencies": {
         "brain": "^1.0.0",

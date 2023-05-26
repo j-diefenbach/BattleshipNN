@@ -14,10 +14,13 @@ interface ship {
 }
 
 interface test {
-    inputBoard: number[][];
     input: number[];
     output: number[];
-    outputBoard: number[][];
+    hitState: number[][];
+    shipState: number[][];
+    probState: number[][];
+    infoGainState: number[][];
+    size: number,
 }
 
 export {
