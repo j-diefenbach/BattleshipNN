@@ -101,6 +101,7 @@ function generateShipConfiguration(boardSize: number, ships: ship[]) {
     let shipConfig: board = {
         size: boardSize,
         matrix: generateMatrix(boardSize),
+        breakdown: [],
     };
     
     let allShipsPlaced = false;
@@ -127,6 +128,15 @@ function tryPlaceShip(shipConfig: board, ship: ship) {
         // console.log(direction);
         if (!overlap(shipConfig, ship, direction, coord)) {
             place(shipConfig, ship, direction, coord);
+            let thisShipBoard = {
+                size: shipConfig.size,
+                matrix: generateMatrix(shipConfig.size),
+            }
+            shipConfig.breakdown?.push({
+                ship: ship,
+                prob: thisShipBoard,
+            })
+            place(thisShipBoard, ship, direction, coord);
             ship.placed = true;
             break;
         }
@@ -329,6 +339,15 @@ function generateMidMatrix(size: number) {
     return matrix;
 }
 
+function cloneBoard(board: board) {
+   
+    let newBoard = {
+        size: board.size,
+        matrix: JSON.parse(JSON.stringify(board.matrix)),
+    }
+    return newBoard;
+}
+
 function inBounds(board: board, coord: coord) {
     if (coord.row < 0 || coord.row >= board.size) {
         return false;
@@ -359,5 +378,6 @@ export {
     directions,
     EMPTY,
     generateMatrix,
-    generateMidMatrix
+    generateMidMatrix,
+    cloneBoard
 }

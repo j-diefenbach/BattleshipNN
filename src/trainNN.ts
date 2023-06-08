@@ -15,57 +15,17 @@ var Trainer = synaptic.Trainer;
 const NUMSHIPCONFIGURATIONS = 10;
 
 
-const REGULAR_BATTLESHIP = {
-    ships: [
-        {
-            length: 2,
-            placed: false,
-        },
-        {
-            length: 3,
-            placed: false,
-        },
-        {
-            length: 3,
-            placed: false,
-        },
-        {
-            length: 4,
-            placed: false,
-        },
-        {
-            length: 5,
-            placed: false,
-        },
-    ],
-    size: 10,
-};
-
-const MINI_BATTLESHIP = {
-    ships: [
-        {
-            length: 2,
-            placed: false,
-        },
-        {
-            length: 3,
-            placed: false,
-        }
-    ],
-    size: 5,
-};
-
-
-
 let SIZE = 3;
 let SHIPS = [
     {
         length: 2,
         placed: false,
+        name: 'patrol boat',
     },
     {
         length: 2,
         placed: false,
+        name: 'sub',
     }
 ];
 
@@ -84,6 +44,7 @@ let game = setGame({
 });
 let trainingPairs = generateTests(SIZE, SHIPS, NUMSHIPCONFIGURATIONS);
 let testingPairs = generateTests(SIZE, SHIPS, NUMSHIPCONFIGURATIONS);
+
 let tests = {
     trainingPairs: trainingPairs,
     testingPairs: testingPairs,

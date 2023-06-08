@@ -1,6 +1,7 @@
 // formats data for exporting and visualisation in R
 
 import { board } from "./GameData";
+const fs = require('fs');
 
 function printMatrix(matrix: number[][], size: number) {
     // row col value
@@ -13,6 +14,27 @@ function printMatrix(matrix: number[][], size: number) {
     }
 }
 
+let dataSetName = 'blank';
+
+function setDataSetName(newName) {
+    dataSetName = newName;
+}
+
+function printEventLog(file: string, event: string, turn: number) {
+    fs.appendFileSync(`./data/${file}.txt`, `${turn} ${event} ${dataSetName}\n`);
+}
+
+function writeLine(file: string, string: string) {
+    fs.appendFileSync(`./data/${file}.txt`, `${string} ${dataSetName}\n`);
+}
+
+function writeBoard(file: string, turn: number, board: board) {
+
+}
+
 export {
-    printMatrix
+    printMatrix,
+    printEventLog,
+    writeLine,
+    setDataSetName
 };

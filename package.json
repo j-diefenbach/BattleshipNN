@@ -3,12 +3,14 @@
         "train": "ts-node -T src/trainNN.ts",
         "main": "ts-node -T src/battleship.ts",
         "analyse": "ts-node -T src/analysis.ts",
+        "show": "ts-node -T src/testGames.ts",
         "lint": "eslint 'src/**/*.{ts,js}'",
         "lint-fix": "eslint --fix 'src/**/*.{ts,js}'"
     },
     "dependencies": {
         "brain": "^1.0.0",
         "morgan": "^1.10.0",
+        "prompt-sync": "^4.2.0",
         "rewire": "^6.0.0",
         "sharp": "^0.32.0",
         "synaptic": "^1.1.4",

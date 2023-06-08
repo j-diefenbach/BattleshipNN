@@ -18,6 +18,9 @@ var Network = synaptic.Network;
 
 const NUM_SIMULATIONS = 100;
 
+
+
+
 let tests = JSON.parse(fs.readFileSync('./src/tests.json', { encoding: 'utf8', flag: 'r' }, (err) => {
     if (err)
       console.log(err);
