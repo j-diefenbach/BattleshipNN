@@ -34,7 +34,7 @@ let numShipArrangements: {
 let numArrangementsPerShip: {shipName: string, number: number}[] = [];
 
 
-function getProbability(hitState: board, ships: ship[]) {
+function independentProbability(hitState: board, ships: ship[]) {
     let totalProb = generateMatrix(hitState.size);
     
     for (const ship of ships) {
@@ -98,6 +98,34 @@ function getProbability(hitState: board, ships: ship[]) {
     return totalProb;
 }
 
+// calculates the probability of a given ship and a given arrangement / hitState
+// the ship is free, meaning that it is placed independently of any ships that have not been fixed yet
+function freeShip(hitState: board, arrangement: board, probBoard: board, fixedShips: ship[], ship: ship) {
+    let localProb = {
+        size: hitState.size,
+        matrix: generateMatrix(hitState.size),
+    };
+    // all possible placements in free spaces
+    // hits and misses are treated equally
+    // ideally, most hits are already covered by fix methods
+    for (let row = 0; row < hitState.size; row++) {
+        for (let col = 0; col < hitState.size; col++) {
+            let coord = {row: row, col: col};
+            for (const dir of directions) {
+                if (arrangementPossible(hitState, arrangement, ship, dir, coord)) {
+                    addProb(localProb, ship, dir, coord);
+                }
+            }
+        }
+    }
+
+    for (let row = 0; row < hitState.size; row++) {
+        for (let col = 0; col < hitState.size; col++) {
+            probBoard[row][col] += localProb.matrix[row][col];
+        }
+    }
+}
+
 function probabilityToTarget(probBoard: board, hitState: board) {
     let max = 0;
     let target: coord | undefined = undefined;
@@ -125,7 +153,7 @@ function probabilityToTarget(probBoard: board, hitState: board) {
 function getBasicProbabilityTarget(hitState: board, ships: ship[]) {
     let probBoard = {
         size: hitState.size,
-        matrix: getProbability(hitState, ships),
+        matrix: independentProbability(hitState, ships),
     }
     return probabilityToTarget(probBoard, hitState);
 
@@ -145,7 +173,7 @@ function getImprovedProbabilityTarget(hitState: board, ships: ship[]) {
     if (numFired < 0) {
         probBoard = {
             size: hitState.size,
-            matrix: getProbability(hitState, ships),
+            matrix: independentProbability(hitState, ships),
         };
     } else {
         probBoard = getImprovedProbabiliyBoard(hitState, ships);
@@ -248,6 +276,27 @@ function getImprovedProbabiliyBoard(hitState: board, ships: ship[]) {
     writeLine('timerOverall', `${numFired} ${numArrangements.accounted} accountedTotal`);
     writeLine('timerOverall', `${numFired} ${Date.now() - timeStarted} realTime`);
     return probBoard;
+}
+
+function permutationProbabilityCovering(hitState: board, ships: ship[]) {
+    // Fix ship locations from known hits
+
+}
+
+function permutationProbabilitySampling(hitState: board, ships: ship[]) {
+    // Generate random ship locations until it fits board state and covers at least one hit
+    const boardSize = hitState.size;
+    let probBoard: board = {
+        size: boardSize,
+        matrix: generateMatrix(boardSize),
+        breakdown: [],
+    }
+
+
+}
+
+function placeRandomShip(hitState: board, ships: ship[]) {
+    
 }
 
 function fixShip(hitState: board, arrangement: board, probBoard: board, fixedShips: ship[], thisShip: ship) {
@@ -651,7 +700,7 @@ function addProb(probBoard: board, ship: ship, direction: coord, coord: coord) {
 }
 
 export {
-    getProbability,
+    independentProbability,
     getInfoGainBoard,
     getImprovedProbabilityTarget,
     getImprovedProbabiliyBoard,

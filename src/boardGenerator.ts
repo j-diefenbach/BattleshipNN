@@ -2,7 +2,7 @@
 // need to be able to vary parameters and create multiple variations of the same underlying board state
 
 import { board, ship, test } from "./GameData";
-import { getInfoGainBoard, getProbability } from "./probability";
+import { getInfoGainBoard, independentProbability } from "./probability";
 
 function generateTests(boardSize: number, ships: ship[], numSolutions: number) {
     let tests: test[] = [];
@@ -12,7 +12,7 @@ function generateTests(boardSize: number, ships: ship[], numSolutions: number) {
         let hitConfigs = generateHitConfigurations(shipConfig);
         for (const hitConfig of hitConfigs) {
             // generate input-solution pair
-            let probState = getProbability(hitConfig, ships);
+            let probState = independentProbability(hitConfig, ships);
             let infoGainState = getInfoGainBoard(hitConfig, probState, ships);
             let newTest: test = {
                 input: [],
@@ -45,7 +45,7 @@ function generateStrictTests(boardSize: number, ships: ship[], numSolutions: num
         let hitConfigs = generateHitConfigurations(shipConfig);
         for (const hitConfig of hitConfigs) {
             // generate input-solution pair
-            let probState = getProbability(hitConfig, ships);
+            let probState = independentProbability(hitConfig, ships);
             let solution = shipConfig.matrix;
             let infoGainState = getInfoGainBoard(hitConfig, probState, ships);
             let newTest: test = {

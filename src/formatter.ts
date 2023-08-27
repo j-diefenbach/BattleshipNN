@@ -28,8 +28,13 @@ function writeLine(file: string, string: string) {
     fs.appendFileSync(`./data/${file}.txt`, `${string} ${dataSetName}\n`);
 }
 
-function writeBoard(file: string, turn: number, board: board) {
-
+function printProbBoard(file: string, turn: number, board: board) {
+    // TODO
+    for (let row = 0; row < board.size; row++) {
+        for (let col = 0; col < board.size; col++) {
+            
+        }
+    }
 }
 
 export {
